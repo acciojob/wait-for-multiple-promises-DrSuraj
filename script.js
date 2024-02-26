@@ -1,51 +1,42 @@
-// Function to create a promise that resolves after a random time between 1 and 3 seconds
-function createRandomPromise() {
-    const randomTime = Math.floor(Math.random() * 3) + 1; // Random time between 1 and 3 seconds
-    return new Promise(resolve => {
-        setTimeout(() => {
-            resolve(randomTime);
-        }, randomTime * 1000);
-    });
+//your JS code here. If required.
+// Function to create a Promise that resolves after a random time between 1 and 3 seconds
+function createRandomPromise(name) {
+  const randomTime = Math.floor(Math.random() * 3000) + 1000; // Random time between 1 and 3 seconds
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({ name, time: randomTime / 1000 }); // Resolving with the promise name and time in seconds
+    }, randomTime);
+  });
 }
 
-// Array to store the promises
-const promises = [];
+// Create an array of three promises
+const promises = [
+  createRandomPromise("Promise 1"),
+  createRandomPromise("Promise 2"),
+  createRandomPromise("Promise 3")
+];
 
-// Create 3 promises
-for (let i = 0; i < 3; i++) {
-    promises.push(createRandomPromise());
-}
+// Add a row with "Loading..." initially
+document.getElementById('output').innerHTML = '<tr><td colspan="2">Loading...</td></tr>';
 
-// Add a row with Loading... to the table initially
-const table = document.getElementById('myTable');
-const loadingRow = table.insertRow();
-const loadingCell = loadingRow.insertCell();
-loadingCell.colSpan = 2;
-loadingCell.textContent = 'Loading...';
-
-// Wait for all promises to resolve
+// Use Promise.all to wait for all promises to resolve
 Promise.all(promises)
-    .then(results => {
-        // Remove the loading row
-        table.deleteRow(loadingRow.rowIndex);
+  .then((results) => {
+    // Remove the "Loading..." row
+    document.getElementById('output').innerHTML = '';
 
-        // Populate the table with the resolved values
-        results.forEach((time, index) => {
-            const row = table.insertRow();
-            const promiseCell = row.insertCell();
-            const timeCell = row.insertCell();
-            promiseCell.textContent = `Promise ${index + 1}`;
-            timeCell.textContent = `${time} seconds`;
-        });
-
-        // Calculate the total time taken to resolve all promises
-        const totalTime = results.reduce((acc, curr) => acc + curr, 0);
-        const totalRow = table.insertRow();
-        const totalCellLabel = totalRow.insertCell();
-        const totalCellTime = totalRow.insertCell();
-        totalCellLabel.textContent = 'Total';
-        totalCellTime.textContent = `${totalTime.toFixed(3)} seconds`;
-    })
-    .catch(error => {
-        console.error('Error occurred:', error);
+    // Populate the table with the resolved values
+    results.forEach((result) => {
+      const newRow = `<tr><td>${result.name}</td><td>${result.time}</td></tr>`;
+      document.getElementById('output').innerHTML += newRow;
     });
+
+    // Calculate and add the total time row
+    const totalTime = results.reduce((acc, result) => acc + result.time, 0);
+    const totalRow = `<tr><td>Total</td><td>${totalTime.toFixed(3)}</td></tr>`;
+    document.getElementById('output').innerHTML += totalRow;
+  })
+  .catch((error) => {
+    console.error(error);
+    document.getElementById('output').innerHTML = '<tr><td colspan="2">An error occurred.</td></tr>';
+  });
